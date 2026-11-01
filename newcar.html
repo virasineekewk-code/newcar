@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realistic Outdoor Arena - 3D Drag Race Simulator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap');
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%); color: #0f172a; }
+        .glass-panel-light { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(16px); border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="glass-panel-light sticky top-0 z-40 px-6 py-4 flex justify-between items-center border-b border-slate-200">
+        <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl text-white font-black text-xl shadow-md shadow-blue-500/20">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-xl tracking-wider bg-gradient-to-r from-slate-900 via-blue-950 to-slate-800 bg-clip-text text-transparent">
+                    3D DRAG ARENA SIMULATOR
+                </h1>
+                <p class="text-xs text-slate-500 font-medium">สื่อการสอนคณิตศาสตร์ช่างยนต์: คำนวณปริมาตรดูด ($V_s$) & อัตราส่วนการอัด ($CR$)</p>
+            </div>
+        </div>
+        <div class="px-4 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-xs font-bold flex items-center gap-2">
+            <i class="fa-solid fa-flag-checkered"></i> REAL ARENA TRACK (400M)
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-6">
+
+        <!-- Controls Sidebar (4 Cols) -->
+        <div class="lg:col-span-4 flex flex-col gap-4">
+            <div class="glass-panel-light p-5 rounded-2xl flex-1 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-base font-bold mb-4 text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-blue-600"></i> ปรับแต่งสเปกเครื่องยนต์ (3 คัน)
+                    </h2>
+
+                    <!-- Car 1 (RED GT - เลนซ้าย) -->
+                    <div class="p-4 rounded-xl bg-slate-50 border-l-4 border-red-500 mb-4 shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-red-600 text-xs">🚗 CAR #1 (RED GT) - เลนซ้าย</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="text-[10px] text-slate-500 font-semibold">Bore (D) mm</label>
+                                <input type="number" id="d1" value="50" min="30" max="90" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-center font-bold text-slate-800 focus:border-red-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-500 font-semibold">Stroke (L) mm</label>
+                                <input type="number" id="l1" value="55" min="30" max="90" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-center font-bold text-slate-800 focus:border-red-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-500 font-semibold">Chamber (Vc) cc</label>
+                                <input type="number" id="vc1" value="12" min="5" max="40" step="0.5" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-center font-bold text-slate-800 focus:border-red-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Car 2 (BLUE GT - เลนกลาง) -->
+                    <div class="p-4 rounded-xl bg-slate-50 border-l-4 border-blue-500 mb-4 shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-blue-600 text-xs">🚗 CAR #2 (BLUE GT) - เลนกลาง</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="text-[10px] text-slate-500 font-semibold">Bore (D) mm</label>
+                                <input type="number" id="d2" value="53" min="30" max="90" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-center font-bold text-slate-800 focus:border-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-500 font-semibold">Stroke (L) mm</label>
+                                <input type="number" id="l2" value="55" min="30" max="90" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-center font-bold text-slate-800 focus:border-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-500 font-semibold">Chamber (Vc) cc</label>
+                                <input type="number" id="vc2" value="11" min="5" max="40" step="0.5" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-center font-bold text-slate-800 focus:border-blue-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Car 3 (GREEN GT - เลนขวา) -->
+                    <div class="p-4 rounded-xl bg-slate-50 border-l-4 border-emerald-500 mb-4 shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-emerald-600 text-xs">🚗 CAR #3 (GREEN GT) - เลนขวา</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="text-[10px] text-slate-500 font-semibold">Bore (D) mm</label>
+                                <input type="number" id="d3" value="53" min="30" max="90" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-center font-bold text-slate-800 focus:border-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-500 font-semibold">Stroke (L) mm</label>
+                                <input type="number" id="l3" value="55" min="30" max="90" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-center font-bold text-slate-800 focus:border-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-500 font-semibold">Chamber (Vc) cc</label>
+                                <input type="number" id="vc3" value="13.5" min="5" max="40" step="0.5" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs text-center font-bold text-slate-800 focus:border-emerald-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <button onclick="triggerRace()" id="btn-race" class="w-full py-4 px-6 rounded-xl font-black text-lg text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-blue-500/25 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play"></i> START 3D RACE! (400M)
+                </button>
+            </div>
+        </div>
+
+        <!-- 3-Split Screen Viewport & Summary Table (8 Cols) -->
+        <div class="lg:col-span-8 flex flex-col gap-4">
+
+            <!-- แถบภาพรวมแบบ Dynamic Overhead ติดตามกลุ่มรถแข่ง (เห็นรถใหญ่ชัดเจน) -->
+            <div class="glass-panel-light p-3 rounded-xl border border-slate-200 flex flex-col gap-1.5 shadow-sm">
+                <div class="flex justify-between items-center px-1 text-xs font-extrabold text-slate-700">
+                    <span class="flex items-center gap-1.5 text-blue-600"><i class="fa-solid fa-eye"></i> CLOSE-UP OVERHEAD VIEW (ภาพรวมติดตามระยะประชิด)</span>
+                    <span class="text-slate-500 font-medium text-[11px]">มุมมองมุมสูงแบบซูมเห็นตัวรถและตำแหน่งนำ-ตามชัดเจน</span>
+                </div>
+                <div id="full-track-container" class="w-full h-44 rounded-lg overflow-hidden bg-slate-900 border border-slate-300 relative shadow-inner"></div>
+            </div>
+
+            <!-- Viewport 3 ช่องการแข่งขันหลัก -->
+            <div class="glass-panel-light rounded-2xl overflow-hidden relative border border-slate-200 h-[350px] flex flex-col shadow-sm">
+                <div id="canvas-container" class="w-full h-full"></div>
+
+                <!-- Headers Label for 3 Split Views -->
+                <div class="absolute top-3 left-0 right-0 grid grid-cols-3 px-3 pointer-events-none text-center font-black text-xs">
+                    <div class="text-red-600 bg-white/90 mx-1 py-1.5 rounded-lg border border-red-200 shadow-sm">CAM 1: RED GT (เลนซ้าย)</div>
+                    <div class="text-blue-600 bg-white/90 mx-1 py-1.5 rounded-lg border border-blue-200 shadow-sm">CAM 2: BLUE GT (เลนกลาง)</div>
+                    <div class="text-emerald-600 bg-white/90 mx-1 py-1.5 rounded-lg border border-emerald-200 shadow-sm">CAM 3: GREEN GT (เลนขวา)</div>
+                </div>
+            </div>
+
+            <!-- Summary Table Container -->
+            <div id="summary-table-container" class="glass-panel-light p-5 rounded-2xl border border-slate-200 overflow-x-auto shadow-sm hidden">
+                <h3 class="text-xs font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-table text-blue-600"></i> ตารางสรุปพารามิเตอร์เครื่องยนต์และผลคำนวณ
+                </h3>
+                <table class="w-full text-left text-xs text-slate-700">
+                    <thead class="bg-slate-100 text-slate-600 uppercase font-bold text-[10px]">
+                        <tr>
+                            <th class="p-2.5 rounded-l-lg">รถแข่ง</th>
+                            <th class="p-2.5">Bore D (mm)</th>
+                            <th class="p-2.5">Stroke L (mm)</th>
+                            <th class="p-2.5">Chamber Vc (cc)</th>
+                            <th class="p-2.5">ปริมาตรดูด Vs (cc)</th>
+                            <th class="p-2.5 rounded-r-lg">อัตราส่วนการอัด (CR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summary-table-body" class="divide-y divide-slate-200">
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let scene, mainRenderer, trackRenderer, cars = [], smokeParticles = [];
+        let fullTrackCamera;
+        let isRacing = false;
+
+        const carSpecs = [
+            { name: "RED GT", color: 0xef4444, x: 6, dId: "d1", lId: "l1", vcId: "vc1" },
+            { name: "BLUE GT", color: 0x3b82f6, x: 0, dId: "d2", lId: "l2", vcId: "vc2" },
+            { name: "GREEN GT", color: 0x10b981, x: -6, dId: "d3", lId: "l3", vcId: "vc3" }
+        ];
+
+        function createSportCarMesh(colorHex) {
+            const carGroup = new THREE.Group();
+
+            const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.8, roughness: 0.15 });
+            const glassMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.9, roughness: 0.05, transparent: true, opacity: 0.85 });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x111625, roughness: 0.5 });
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0a0e17, roughness: 0.7 });
+            const rimMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.1 });
+
+            // Body Base
+            const baseGeo = new THREE.BoxGeometry(2.3, 0.5, 4.4);
+            const base = new THREE.Mesh(baseGeo, bodyMat);
+            base.position.set(0, 0.45, 0);
+            base.castShadow = true;
+            carGroup.add(base);
+
+            // Hood
+            const hoodGeo = new THREE.BoxGeometry(2.2, 0.35, 1.5);
+            const hood = new THREE.Mesh(hoodGeo, bodyMat);
+            hood.position.set(0, 0.65, 1.2);
+            hood.rotation.x = -0.1;
+            hood.castShadow = true;
+            carGroup.add(hood);
+
+            // Cabin Roof
+            const cabinGeo = new THREE.BoxGeometry(1.9, 0.6, 2.0);
+            const cabin = new THREE.Mesh(cabinGeo, glassMat);
+            cabin.position.set(0, 1.05, -0.2);
+            cabin.castShadow = true;
+            carGroup.add(cabin);
+
+            const roofGeo = new THREE.BoxGeometry(1.85, 0.08, 1.6);
+            const roof = new THREE.Mesh(roofGeo, bodyMat);
+            roof.position.set(0, 1.38, -0.2);
+            carGroup.add(roof);
+
+            // Spoiler
+            const spoilerGeo = new THREE.BoxGeometry(2.3, 0.08, 0.4);
+            const spoiler = new THREE.Mesh(spoilerGeo, darkMat);
+            spoiler.position.set(0, 0.9, -2.1);
+            carGroup.add(spoiler);
+
+            // Wheels
+            const wTireGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.45, 24);
+            const wRimGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.47, 16);
+
+            [[-1.15, 0.5, 1.3], [1.15, 0.5, 1.3], [-1.15, 0.5, -1.3], [1.15, 0.5, -1.3]].forEach(p => {
+                const wGroup = new THREE.Group();
+                const tire = new THREE.Mesh(wTireGeo, wheelMat);
+                tire.rotation.z = Math.PI / 2;
+                tire.castShadow = true;
+                wGroup.add(tire);
+                const rim = new THREE.Mesh(wRimGeo, rimMat);
+                rim.rotation.z = Math.PI / 2;
+                wGroup.add(rim);
+                wGroup.position.set(...p);
+                carGroup.add(wGroup);
+            });
+
+            return carGroup;
+        }
+
+        function createTree(x, z) {
+            const tree = new THREE.Group();
+            const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, 3, 8);
+            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.9 });
+            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+            trunk.position.y = 1.5;
+            trunk.castShadow = true;
+            tree.add(trunk);
+
+            const leavesGeo = new THREE.ConeGeometry(2, 5, 8);
+            const leavesMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.8 });
+            const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+            leaves.position.y = 4.5;
+            leaves.castShadow = true;
+            tree.add(leaves);
+
+            tree.position.set(x, 0, z);
+            return tree;
+        }
+
+        function init3D() {
+            const container = document.getElementById('canvas-container');
+            const trackContainer = document.getElementById('full-track-container');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x38bdf8);
+            scene.fog = new THREE.FogExp2(0x38bdf8, 0.002);
+
+            mainRenderer = new THREE.WebGLRenderer({ antialias: true });
+            mainRenderer.setSize(container.clientWidth, container.clientHeight);
+            mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            mainRenderer.shadowMap.enabled = true;
+            mainRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            mainRenderer.setScissorTest(true);
+            container.appendChild(mainRenderer.domElement);
+
+            trackRenderer = new THREE.WebGLRenderer({ antialias: true });
+            trackRenderer.setSize(trackContainer.clientWidth, trackContainer.clientHeight);
+            trackRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            trackContainer.appendChild(trackRenderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.8);
+            sunLight.position.set(50, 90, -40);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            scene.add(sunLight);
+
+            const grassGeo = new THREE.PlaneGeometry(500, 750);
+            const grassMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.85 });
+            const grass = new THREE.Mesh(grassGeo, grassMat);
+            grass.rotation.x = -Math.PI / 2;
+            grass.position.set(0, -0.05, 250);
+            scene.add(grass);
+
+            const trackGeo = new THREE.PlaneGeometry(26, 600);
+            const trackMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
+            const track = new THREE.Mesh(trackGeo, trackMat);
+            track.rotation.x = -Math.PI / 2;
+            track.position.z = 250;
+            track.receiveShadow = true;
+            scene.add(track);
+
+            for (let side of [-13.3, 13.3]) {
+                for (let z = 0; z < 550; z += 6) {
+                    const kerbRedGeo = new THREE.BoxGeometry(0.6, 0.1, 3);
+                    const kerbRedMat = new THREE.MeshStandardMaterial({ color: 0xef4444 });
+                    const kRed = new THREE.Mesh(kerbRedGeo, kerbRedMat);
+                    kRed.position.set(side, 0.05, z);
+
+                    const kerbWhiteGeo = new THREE.BoxGeometry(0.6, 0.1, 3);
+                    const kerbWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                    const kWhite = new THREE.Mesh(kerbWhiteGeo, kerbWhiteMat);
+                    kWhite.position.set(side, 0.05, z + 3);
+
+                    scene.add(kRed, kWhite);
+                }
+            }
+
+            [-4.3, 4.3].forEach(x => {
+                const lineGeo = new THREE.PlaneGeometry(0.3, 600);
+                const lineMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+                const line = new THREE.Mesh(lineGeo, lineMat);
+                line.rotation.x = -Math.PI / 2;
+                line.position.set(x, 0.02, 250);
+                scene.add(line);
+            });
+
+            for (let z = -20; z <= 520; z += 35) {
+                scene.add(createTree(-22 - Math.random()*5, z));
+                scene.add(createTree(22 + Math.random()*5, z));
+            }
+
+            const finishGeo = new THREE.PlaneGeometry(26, 6);
+            const finishMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const finishLine = new THREE.Mesh(finishGeo, finishMat);
+            finishLine.rotation.x = -Math.PI / 2;
+            finishLine.position.set(0, 0.03, 400);
+            scene.add(finishLine);
+
+            const pillarGeo = new THREE.BoxGeometry(1, 8, 1);
+            const pillarMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
+            const p1 = new THREE.Mesh(pillarGeo, pillarMat);
+            p1.position.set(-13, 4, 400);
+            const p2 = p1.clone();
+            p2.position.set(13, 4, 400);
+
+            const archGeo = new THREE.BoxGeometry(27, 1.5, 1);
+            const archMat = new THREE.MeshStandardMaterial({ color: 0xd97706 });
+            const arch = new THREE.Mesh(archGeo, archMat);
+            arch.position.set(0, 8, 400);
+            scene.add(p1, p2, arch);
+
+            // กล้องภาพรวมมินิแมพ ซูมลงมาประชิดกลุ่มรถแข่ง (เห็นตัวรถคันใหญ่ ชัดเจน)
+            const trackAspect = trackContainer.clientWidth / trackContainer.clientHeight;
+            const viewZoomSize = 24; // ซูมกล้องเข้ามาประชิดตัวรถ
+            fullTrackCamera = new THREE.OrthographicCamera(
+                -viewZoomSize * trackAspect,
+                viewZoomSize * trackAspect,
+                14,
+                -14,
+                1,
+                1000
+            );
+            fullTrackCamera.position.set(0, 50, 0);
+            fullTrackCamera.rotation.x = -Math.PI / 2;
+            fullTrackCamera.rotation.z = -Math.PI / 2; // จัดเรียงสนามแนวนอน ซ้ายไปขวา
+
+            const aspect = (container.clientWidth / 3) / container.clientHeight;
+
+            carSpecs.forEach((spec, i) => {
+                const carMesh = createSportCarMesh(spec.color);
+                carMesh.position.set(spec.x, 0, 0);
+                scene.add(carMesh);
+
+                const cam = new THREE.PerspectiveCamera(40, aspect, 0.1, 1000);
+                cam.position.set(spec.x, 4.5, -12);
+                cam.lookAt(spec.x, 1.2, 12);
+
+                cars.push({
+                    mesh: carMesh,
+                    spec: spec,
+                    camera: cam,
+                    dist: 0,
+                    speed: 0,
+                    blown: false,
+                    stopped: false
+                });
+            });
+
+            animate();
+        }
+
+        function calculateAndShowTable() {
+            const tableBody = document.getElementById('summary-table-body');
+            tableBody.innerHTML = '';
+
+            cars.forEach((car) => {
+                const d = parseFloat(document.getElementById(car.spec.dId).value) || 0;
+                const l = parseFloat(document.getElementById(car.spec.lId).value) || 0;
+                const vc = parseFloat(document.getElementById(car.spec.vcId).value) || 1;
+
+                const d_cm = d / 10.0;
+                const l_cm = l / 10.0;
+                const vs = 0.7854 * (d_cm ** 2) * l_cm;
+                const cr = (vs + vc) / vc;
+                const blown = cr > 10.5;
+
+                car.vs = vs;
+                car.cr = cr;
+                car.blown = blown;
+                car.speed = blown ? 0 : (vs * 0.5) + (cr * 3.5);
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-2.5 font-extrabold" style="color:#${car.spec.color.toString(16)}">${car.spec.name}</td>
+                    <td class="p-2.5 font-medium">${d.toFixed(1)}</td>
+                    <td class="p-2.5 font-medium">${l.toFixed(1)}</td>
+                    <td class="p-2.5 font-medium">${vc.toFixed(1)}</td>
+                    <td class="p-2.5 font-bold text-slate-900">${vs.toFixed(2)} cc</td>
+                    <td class="p-2.5 font-bold text-slate-900">${cr.toFixed(2)} : 1</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            document.getElementById('summary-table-container').classList.remove('hidden');
+        }
+
+        function triggerRace() {
+            calculateAndShowTable();
+
+            cars.forEach(c => {
+                c.dist = 0;
+                c.stopped = false;
+                c.mesh.position.z = 0;
+            });
+            isRacing = true;
+        }
+
+        function createSmoke(x, z) {
+            const pGeo = new THREE.SphereGeometry(0.5, 8, 8);
+            const pMat = new THREE.MeshBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.8 });
+            const p = new THREE.Mesh(pGeo, pMat);
+            p.position.set(x + (Math.random() - 0.5) * 0.6, 1.2, z + (Math.random() - 0.5) * 0.6);
+            scene.add(p);
+            smokeParticles.push(p);
+        }
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = Math.min(clock.getDelta(), 0.1);
+
+            let avgZ = 0;
+
+            if (isRacing) {
+                let totalDist = 0;
+                cars.forEach(car => {
+                    if (!car.stopped) {
+                        if (car.blown && car.dist > 50) {
+                            car.stopped = true;
+                        } else if (car.dist >= 400) {
+                            car.dist = 400;
+                            car.stopped = true;
+                        } else {
+                            const step = (car.speed * 0.25 + 10) * delta * 1.6;
+                            car.dist += step;
+                            car.mesh.position.z = car.dist;
+                        }
+
+                        if (car.blown && car.dist > 20 && car.dist <= 65) {
+                            createSmoke(car.spec.x, car.dist);
+                        }
+                    }
+
+                    totalDist += car.dist;
+
+                    car.camera.position.z = car.dist - 12;
+                    car.camera.position.y = 4.5;
+                    car.camera.lookAt(car.spec.x, 1.2, car.dist + 12);
+                });
+
+                avgZ = totalDist / cars.length;
+            }
+
+            // สั่งกล้องมินิแมพติดตามตำแหน่งเฉลี่ยของกลุ่มรถแข่ง เพื่อให้ตัวรถอยู่ตรงกลางเฟรมตลอดการวิ่ง
+            fullTrackCamera.position.z = avgZ;
+
+            for (let i = smokeParticles.length - 1; i >= 0; i--) {
+                let p = smokeParticles[i];
+                p.position.y += 0.04;
+                p.scale.addScalar(0.018);
+                p.material.opacity -= 0.012;
+                if (p.material.opacity <= 0) {
+                    scene.remove(p);
+                    smokeParticles.splice(i, 1);
+                }
+            }
+
+            // เรนเดอร์ 3 ช่องหลัก (Main 3 Viewports)
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const subWidth = Math.floor(width / 3);
+
+            cars.forEach((car, index) => {
+                const left = index * subWidth;
+                mainRenderer.setViewport(left, 0, subWidth, height);
+                mainRenderer.setScissor(left, 0, subWidth, height);
+                mainRenderer.render(scene, car.camera);
+            });
+
+            // เรนเดอร์แถบมินิแมพภาพรวมติดตามแบบขยายใหญ่
+            trackRenderer.render(scene, fullTrackCamera);
+        }
+
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('canvas-container');
+            const trackContainer = document.getElementById('full-track-container');
+
+            const subWidth = Math.floor(container.clientWidth / 3);
+            const height = container.clientHeight;
+
+            cars.forEach(car => {
+                car.camera.aspect = subWidth / height;
+                car.camera.updateProjectionMatrix();
+            });
+            mainRenderer.setSize(container.clientWidth, height);
+
+            const trackAspect = trackContainer.clientWidth / trackContainer.clientHeight;
+            const viewZoomSize = 24;
+            fullTrackCamera.left = -viewZoomSize * trackAspect;
+            fullTrackCamera.right = viewZoomSize * trackAspect;
+            fullTrackCamera.updateProjectionMatrix();
+            trackRenderer.setSize(trackContainer.clientWidth, trackContainer.clientHeight);
+        });
+
+        window.onload = init3D;
+    </script>
+</body>
+</html>
